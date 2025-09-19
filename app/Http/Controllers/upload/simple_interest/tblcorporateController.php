@@ -92,13 +92,14 @@ class tblcorporateController extends Controller
             array_shift($rows); // Skip header
 
             $successCount = 0;
+            $batchData = []; // Kumpulkan data untuk batch insert
+
             foreach ($rows as $index => $row) {
                 if (empty(array_filter($row))) {
                     \Log::info('Baris kosong dilewati pada indeks ' . $index);
                     continue;
                 }
 
-                DB::beginTransaction();
                 try {
                     // Debug raw data
                     \Log::info('Data mentah baris ' . ($index + 1) . ':', $row);
@@ -108,19 +109,16 @@ class tblcorporateController extends Controller
                         \Log::warning('Validasi gagal untuk baris ' . ($index + 1), [
                             'data' => $data
                         ]);
-                        DB::rollBack();
                         continue;
                     }
 
                     // Debug prepared data before insert
                     \Log::info('Data siap untuk insert pada baris ' . ($index + 1) . ':', $data);
 
-                    DB::table('tblcorporateloancabangdetail')->insert($data);
-                    DB::commit();
+                    $batchData[] = $data;
                     $successCount++;
                     
                 } catch (\Exception $e) {
-                    DB::rollBack();
                     \Log::error('Error pada baris ' . ($index + 1) . ': ' . $e->getMessage(), [
                         'data_mentah' => $row,
                         'trace' => $e->getTraceAsString()
@@ -128,8 +126,13 @@ class tblcorporateController extends Controller
                 }
             }
 
-            if ($successCount > 0) {
-                return redirect()->back()->with('success', "Berhasil import $successCount data");
+            if (!empty($batchData)) {
+                // Gunakan model untuk batch insert ke tabel _upload
+                $result = $this->homeModel->insertTransactionBatchCorporate($batchData);
+                
+                if ($result) {
+                    return redirect()->back()->with('success', "Berhasil import $successCount data");
+                }
             }
 
             throw new \Exception('Tidak ada data yang berhasil diimport');

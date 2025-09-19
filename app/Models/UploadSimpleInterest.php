@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 class UploadSimpleInterest extends Model
 {
     // Nama tabel utama yang digunakan dalam model ini
-    protected $table = 'tblmaster_tmpcorporate';
+    protected $table = 'tblmaster_tmpcorporate_upload';
 
     // Nama tabel untuk detail pinjaman korporat
     protected $tblCorporateLoanCabangDetail = 'tblcorporateloancabangdetail';
@@ -76,7 +76,7 @@ class UploadSimpleInterest extends Model
     public function fetchTblCorporateLoanCabangDetail($id_pt)
     {
         return DB::table($this->tblCorporateLoanCabangDetail)->where('id_pt', $id_pt)->get()->toArray();
-    }
+    }   
 
     /**
      * Memeriksa duplikasi ID transaksi (idtrx) di tabel tblcorporateloancabangdetail

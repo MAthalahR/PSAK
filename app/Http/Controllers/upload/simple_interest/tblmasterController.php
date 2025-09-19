@@ -233,43 +233,27 @@ class tblmasterController extends Controller
     public function clear(Request $request)
     {
         try {
+            DB::beginTransaction();
+
             $user = Auth::user();
-
-            // Ambil id_pt dari properti user, bukan method
-            $id_pt = $user->id_pt; // Mengakses sebagai properti, bukan method
-
+            $id_pt = $user->id_pt;
 
             if (!$id_pt) {
                 Log::warning('ID PT tidak ditemukan untuk user:', ['user_id' => $user->id]);
                 return redirect()->back()->with('error', 'ID PT tidak ditemukan');
             }
 
-            // Log untuk debugging
             Log::info('Attempting to clear data for PT ID: ' . $id_pt);
 
-            $tblmaster = collect();
+            // Hapus data dari tabel tblmaster_tmpcorporate_upload
+            $deleted = DB::table('tblmaster_tmpcorporate_upload')
+                ->where('id_pt', $id_pt)
+                ->delete();
 
             DB::commit();
 
-            // Return view with empty data
-            return view('upload.simple_interest.tblmaster', compact('tblmaster'))
-                ->with('success', 'Data has been cleared from the view.');
-
-            // Riyaci remark - Tidak boleh hapus data tblmaster_tmpcorporate
-            // Hapus data menggunakan query builder
-            //$deleted = DB::table('tblmaster_tmpcorporate')
-            //    ->where('id_pt', $id_pt)
-            //    ->delete();
-            //
-            //if ($deleted > 0) {
-            //    DB::commit();
-            //    Log::info('Successfully deleted ' . $deleted . ' records');
-            //    return redirect()->back()->with('success', 'Berhasil menghapus ' . $deleted . ' data');
-            //}
-            //
-            //DB::rollBack();
-            //Log::warning('No data found to delete for PT ID: ' . $id_pt);
-            //return redirect()->back()->with('error', 'Tidak ada data yang dapat dihapus untuk PT ini');
+            Log::info('Successfully deleted ' . $deleted . ' records from tblmaster_tmpcorporate_upload');
+            return redirect()->back()->with('success', 'Berhasil menghapus ' . $deleted . ' data dari database');
 
         } catch (\Exception $e) {
             DB::rollBack();

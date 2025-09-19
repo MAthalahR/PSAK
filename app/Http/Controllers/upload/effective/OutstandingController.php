@@ -23,7 +23,7 @@ class OutstandingController extends Controller
 
         // dd($bulan, $tahun);
 
-        $tblmaster = DB::table('tblmaster_outstanding')
+        $tblmaster = DB::table('tblmaster_outstanding_upload')
             ->where('id_pt', $id_pt)
             ->where('tahun', $tahun)
             ->where('bulan', $bulan)
@@ -46,7 +46,7 @@ class OutstandingController extends Controller
             
             Log::info('Attempting to clear data for PT ID: ' . $id_pt);
             
-            $deleted = DB::table('tblmaster_outstanding')
+            $deleted = DB::table('tblmaster_outstanding_upload')
                 ->where('id_pt', $id_pt)
                 ->where('tahun', $tahun)
                 ->where('bulan', $bulan)
@@ -82,14 +82,14 @@ class OutstandingController extends Controller
             $bulan = $request->input('bulan') ?? date('m');
 
             // Cek dan hapus data yang ada
-            $existingData = DB::table('tblmaster_outstanding')
+            $existingData = DB::table('tblmaster_outstanding_upload')
                 ->where('id_pt', $id_pt)
                 ->where('tahun', $tahun)
                 ->where('bulan', $bulan)
                 ->exists();
 
             if ($existingData) {
-                DB::table('tblmaster_outstanding')
+                DB::table('tblmaster_outstanding_upload')
                     ->where('id_pt', $id_pt)
                     ->where('tahun', $tahun)
                     ->where('bulan', $bulan)
@@ -168,7 +168,7 @@ class OutstandingController extends Controller
                         }
                     }
 
-                    DB::table('tblmaster_outstanding')->insert($data);
+                    DB::table('tblmaster_outstanding_upload')->insert($data);
                     DB::commit();
                     $successCount++;
                 } catch (\Exception $e) {
